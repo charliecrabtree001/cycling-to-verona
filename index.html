@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to cycle through Europe for (almost) free.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ========================================
+           THEME: THE GRIND - Brutalist Noir
+           ======================================== */
+        .theme-grind {
+            --bg-primary: #121212;
+            --bg-secondary: #1a1a1a;
+            --bg-card: rgba(30, 30, 30, 0.9);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent: #ffffff;
+            --accent-dim: #666666;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-blur: 0;
+            --grain-opacity: 0.04;
+        }
+
+        /* ========================================
+           THEME: THE STARS - Glassmorphism Twilight
+           ======================================== */
+        .theme-stars {
+            --bg-primary: #0f0c29;
+            --bg-secondary: #1a1a2e;
+            --bg-card: rgba(255, 255, 255, 0.08);
+            --text-primary: #fff7ed;
+            --text-secondary: #fdba74;
+            --accent: #fb923c;
+            --accent-dim: #c2410c;
+            --border: rgba(251, 146, 60, 0.3);
+            --card-blur: 12px;
+            --grain-opacity: 0;
+        }
+
+        .theme-stars body,
+        .theme-stars {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 40%, #24243e 60%, #7c2d12 85%, #ea580c 100%);
+            background-attachment: fixed;
+        }
+
+        /* ========================================
+           BASE STYLES
+           ======================================== */
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-x: hidden;
+        }
+
+        /* Film Grain Overlay */
+        .grain-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: var(--grain-opacity);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            transition: opacity 0.6s ease;
+        }
+
+        /* Glass Card Effect */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(var(--card-blur));
+            -webkit-backdrop-filter: blur(var(--card-blur));
+            border: 1px solid var(--border);
+            transition: all 0.4s ease;
+        }
+
+        /* ========================================
+           SCROLL REVEAL ANIMATIONS
+           ======================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+
+        /* ========================================
+           VIBE METER HUD
+           ======================================== */
+        .vibe-meter {
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .theme-stars .vibe-meter {
+            background: rgba(15, 12, 41, 0.85);
+            border: 1px solid rgba(251, 146, 60, 0.2);
+        }
+
+        .meter-bar {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ========================================
+           BIKE LOADOUT HOTSPOTS
+           ======================================== */
+        .hotspot {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .hotspot-pulse {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .hotspot-dot {
+            position: absolute;
+            inset: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 12px var(--accent);
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            50% { transform: scale(1.4); opacity: 0; }
+            100% { transform: scale(0.8); opacity: 0; }
+        }
+
+        .hotspot-card {
+            position: absolute;
+            width: 280px;
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 50;
+        }
+
+        .hotspot:hover .hotspot-card {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        /* ========================================
+           UTILITY CLASSES
+           ======================================== */
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-accent { color: var(--accent); }
+        .bg-primary { background-color: var(--bg-primary); }
+        .bg-secondary { background-color: var(--bg-secondary); }
+        .border-accent { border-color: var(--border); }
+
+        /* Lazy loading images */
+        .lazy-img {
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        .lazy-img.loaded {
+            opacity: 1;
+        }
+
+        /* Section data attributes for vibe meter */
+        [data-vibe] {
+            scroll-margin-top: 100px;
+        }
+    </style>
+</head>
+<body class="theme-grind">
+    <!-- Film Grain Overlay -->
+    <div class="grain-overlay"></div>
+
+    <!-- ========================================
+         NAVIGATION
+         ======================================== -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-card border-b border-accent">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="#hero" class="text-lg font-bold text-primary">London <span class="text-accent">→</span> Verona</a>
+
+            <!-- Vibe Toggle -->
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-secondary hidden sm:block">THE GRIND</span>
+                <button id="vibeToggle" class="relative w-14 h-7 rounded-full bg-white/10 cursor-pointer transition-colors" aria-label="Toggle theme">
+                    <span id="vibeThumb" class="absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-md transition-transform"></span>
+                </button>
+                <span class="text-xs text-secondary hidden sm:block">THE STARS</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========================================
+         VIBE METER HUD
+         ======================================== -->
+    <div class="vibe-meter fixed bottom-6 right-6 z-50 rounded-2xl p-4 w-48">
+        <p class="text-xs text-secondary uppercase tracking-wider mb-3 font-bold">Vibe Meter</p>
+
+        <!-- Obstacle Bar -->
+        <div class="mb-3">
+            <div class="flex justify-between text-xs mb-1">
+                <span class="text-secondary">Obstacle</span>
+                <span id="obstacleValue" class="text-primary font-bold">0%</span>
+            </div>
+            <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div id="obstacleBar" class="meter-bar h-full bg-white rounded-full" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Joy Bar -->
+        <div>
+            <div class="flex justify-between text-xs mb-1">
+                <span class="text-secondary">Joy</span>
+                <span id="joyValue" class="text-accent font-bold">0%</span>
+            </div>
+            <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div id="joyBar" class="meter-bar h-full rounded-full" style="width: 0%; background: linear-gradient(90deg, #f97316, #fbbf24)"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         HERO SECTION
+         ======================================== -->
+    <section id="hero" class="min-h-screen flex items-center justify-center relative" data-vibe="neutral" data-obstacle="10" data-joy="50">
+        <div class="relative z-10 text-center px-4 py-20 max-w-5xl mx-auto">
+            <p class="reveal text-secondary text-sm tracking-[0.4em] uppercase mb-6">A Documentary Journey</p>
+            <h1 class="reveal reveal-delay-1 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-primary mb-6 leading-tight tracking-tight">
+                How to cycle through Europe for (almost) free.
+            </h1>
+            <p class="reveal reveal-delay-2 text-lg md:text-xl text-secondary mb-10 max-w-2xl mx-auto">
+                London to Verona. 1,200+ km. Zero accommodation costs. One unforgettable story.
+            </p>
+            <a href="#dream" class="reveal reveal-delay-3 inline-block px-8 py-4 glass-card rounded-full font-bold text-primary hover:scale-105 transition-transform">
+                Begin the Journey
+            </a>
+        </div>
+
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2">
+            <div class="w-6 h-10 rounded-full border-2 border-secondary flex justify-center pt-2">
+                <div class="w-1 h-2 bg-secondary rounded-full animate-bounce"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         THE DREAM
+         ======================================== -->
+    <section id="dream" class="py-24 md:py-32 relative" data-vibe="hopeful" data-obstacle="15" data-joy="70">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="reveal text-3xl md:text-5xl font-black text-primary mb-10">1. The Dream</h2>
+
+            <blockquote class="reveal reveal-delay-1 relative pl-8 border-l-4 border-accent mb-10">
+                <p class="text-2xl md:text-3xl text-primary italic font-light leading-relaxed">
+                    "Shoot for the Moon. Even if you miss, you'll land among the stars."
+                </p>
+            </blockquote>
+
+            <p class="reveal reveal-delay-2 text-secondary text-lg leading-relaxed mb-10">
+                Aim for the impossible. See how far you can go. It needs to excite you—if it doesn't, you won't do it.
+                <span class="text-primary font-bold">The desire needs to be greater than the obstacles.</span>
+            </p>
+
+            <!-- Journey Image -->
+            <div class="reveal reveal-delay-3 rounded-2xl overflow-hidden glass-card">
+                <img
+                    data-src="images/beautiful-view-3.jpg"
+                    alt="Beautiful view from the journey"
+                    class="lazy-img w-full h-72 md:h-96 object-cover"
+                    loading="lazy"
+                >
+            </div>
+            <p class="text-secondary text-sm mt-4 text-center italic">The views that make it all worth it</p>
+        </div>
+    </section>
+
+    <!-- ========================================
+         BIKE LOADOUT - Interactive Section
+         ======================================== -->
+    <section id="gear" class="py-24 md:py-32 relative" data-vibe="preparation" data-obstacle="25" data-joy="40">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="reveal text-3xl md:text-5xl font-black text-primary mb-4">2. The Loadout</h2>
+            <p class="reveal reveal-delay-1 text-secondary text-lg mb-12">Hover the hotspots to see my gear reviews.</p>
+
+            <!-- Interactive Bike Image -->
+            <div class="reveal reveal-delay-2 relative max-w-4xl mx-auto">
+                <div class="rounded-2xl overflow-hidden glass-card">
+                    <img
+                        data-src="images/starter-bike-setup.jpg"
+                        alt="My bike setup with gear"
+                        class="lazy-img w-full object-cover"
+                        loading="lazy"
+                    >
+                </div>
+
+                <!-- Hotspot: Saddle Bag Area (left side) -->
+                <div class="hotspot" style="top: 25%; left: 20%;">
+                    <div class="hotspot-pulse"></div>
+                    <div class="hotspot-dot"></div>
+                    <div class="hotspot-card glass-card rounded-xl p-4 -translate-x-1/2 mt-8">
+                        <h4 class="text-primary font-bold mb-2">Saddle Bag Warning</h4>
+                        <p class="text-secondary text-sm">I strongly advise against 14-18L saddle bags—they bend and break. If you need capacity, go with panniers instead.</p>
+                        <span class="inline-block mt-2 text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded">Not Recommended</span>
+                    </div>
+                </div>
+
+                <!-- Hotspot: Frame Bag -->
+                <div class="hotspot" style="top: 50%; left: 45%;">
+                    <div class="hotspot-pulse"></div>
+                    <div class="hotspot-dot"></div>
+                    <div class="hotspot-card glass-card rounded-xl p-4 -translate-x-1/2 mt-8">
+                        <h4 class="text-primary font-bold mb-2">Frame Bag</h4>
+                        <p class="text-secondary text-sm">The Restrap frame bag was okay, but it was always wet in the morning for some reason. Consider waterproof liners.</p>
+                        <span class="inline-block mt-2 text-xs px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded">Mixed</span>
+                    </div>
+                </div>
+
+                <!-- Hotspot: Handlebar Bag (right side) -->
+                <div class="hotspot" style="top: 35%; left: 70%;">
+                    <div class="hotspot-pulse"></div>
+                    <div class="hotspot-dot"></div>
+                    <div class="hotspot-card glass-card rounded-xl p-4 -translate-x-full mt-8">
+                        <h4 class="text-primary font-bold mb-2">Restrap Handlebar Bag</h4>
+                        <p class="text-secondary text-sm">Great quality and reliable. Perfect for items you need quick access to. Highly recommended for long-distance touring.</p>
+                        <span class="inline-block mt-2 text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">Recommended</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gear Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-16">
+                <div class="reveal glass-card rounded-2xl p-6">
+                    <h3 class="text-xl font-bold text-primary mb-2">Hydrapak Seeker 4L</h3>
+                    <p class="text-secondary text-sm">Water bladder that packs down very small when empty. Skip the water filter—you're never more than 30 minutes from a house.</p>
+                </div>
+                <div class="reveal reveal-delay-1 glass-card rounded-2xl p-6">
+                    <h3 class="text-xl font-bold text-primary mb-2">Navigation Device</h3>
+                    <p class="text-secondary text-sm">Get one that clips onto your handlebar. Beats stopping to check Google Maps every 10 minutes. Komoot is great.</p>
+                </div>
+                <div class="reveal reveal-delay-2 glass-card rounded-2xl p-6">
+                    <h3 class="text-xl font-bold text-primary mb-2">Bivy Bag over Tent</h3>
+                    <p class="text-secondary text-sm">Faster, smaller, lighter. Tents take too long. A bivy lets you sleep in riskier spots and leave quickly.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         THE STRATEGY - Typewriter Section
+         ======================================== -->
+    <section id="strategy" class="py-24 md:py-32 relative" data-vibe="nervous" data-obstacle="60" data-joy="30">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="reveal text-3xl md:text-5xl font-black text-primary mb-4">3. The Strategy</h2>
+            <p class="reveal reveal-delay-1 text-secondary text-lg mb-12">How to sleep for free: Garden → Campsite → Wild</p>
+
+            <!-- Garden Knock Typewriter Card -->
+            <div class="reveal reveal-delay-2 glass-card rounded-3xl p-8 md:p-12 mb-10">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+                        <span class="text-primary font-black text-xl">1</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-primary">The Garden Knock</h3>
+                </div>
+
+                <p class="text-secondary mb-8">At 5pm every day, start knocking on doors. Houses with a <span class="text-accent font-bold">big garden</span> and easy access from public streets.</p>
+
+                <!-- The Script -->
+                <div class="glass-card rounded-2xl p-6 md:p-8">
+                    <p class="text-xs text-accent uppercase tracking-wider mb-4 font-bold">The Script</p>
+                    <p class="text-primary text-lg md:text-xl leading-relaxed">
+                        <span class="text-accent font-medium">{Smile!! Cheerful tone!!!}</span><br><br>
+                        "Hello, my name is <span class="text-accent">{firstName}</span>, long story short I've cycled all of the way from <span class="text-accent">{home}</span>, and I'm cycling to <span class="text-accent">{destination}</span>. I have very little money, so was wondering if there was any possibility you'd let me set up my tent in your garden.<br><br>
+                        <span class="text-secondary italic">{Pause}</span><br><br>
+                        Just one night. <span class="text-secondary italic">{Pause}</span> It's a very small tent. <span class="text-secondary italic">{Pause}</span> I'll be away early in the morning."
+                    </p>
+                </div>
+            </div>
+
+            <!-- Strategy Cards -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="reveal glass-card rounded-2xl p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                            <span class="text-primary font-bold">2</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary">The Campsite</h3>
+                    </div>
+                    <p class="text-secondary">Same script, but ask to "stay here, one night, for free." Spend an hour on this before Plan C.</p>
+                </div>
+
+                <div class="reveal reveal-delay-1 glass-card rounded-2xl p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                            <span class="text-primary font-bold">3</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-primary">Wild Camping</h3>
+                    </div>
+                    <p class="text-secondary">Find the perfect spot, wait until sunset. Lay out your bivy and sleep under the stars.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         THE GRIND
+         ======================================== -->
+    <section id="grind" class="py-24 md:py-32 relative" data-vibe="struggle" data-obstacle="90" data-joy="20">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="reveal text-3xl md:text-5xl font-black text-primary mb-10">4. The Grind</h2>
+
+            <div class="space-y-8 text-lg text-secondary leading-relaxed">
+                <p class="reveal">
+                    It's a difficult adjustment. You're going from <span class="text-primary font-bold">modern day living</span> to <span class="text-accent font-bold">caveman living</span>.
+                </p>
+
+                <p class="reveal reveal-delay-1">
+                    There is so much pain. When your sleeping bag is wet. When you are tired. When you are hungry. When you are nervous to knock on doors.
+                </p>
+
+                <div class="reveal reveal-delay-2 glass-card rounded-2xl p-8 my-12">
+                    <p class="text-2xl text-primary italic font-light">
+                        "But every so often you stop, get off of your bike and take in the view. At that moment, <span class="text-accent">it all becomes worth it</span>."
+                    </p>
+                </div>
+
+                <p class="reveal">
+                    There's nothing like cycling 150 km in a day and then crashing into a vineyard in Italy.
+                </p>
+
+                <!-- Vineyard Image -->
+                <div class="reveal rounded-2xl overflow-hidden glass-card my-10">
+                    <img
+                        data-src="images/italy-vinyard-after-cycling-150km.jpg"
+                        alt="Italian vineyard after cycling 150km"
+                        class="lazy-img w-full h-72 md:h-96 object-cover"
+                        loading="lazy"
+                    >
+                </div>
+
+                <p class="reveal text-primary font-bold text-xl">
+                    There is so much pain, but there is just as much joy. They balance one another out.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         STORIES
+         ======================================== -->
+    <section id="stories" class="py-24 md:py-32 relative" data-vibe="joy" data-obstacle="20" data-joy="95">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="reveal text-3xl md:text-5xl font-black text-primary mb-4">5. The Stories</h2>
+            <p class="reveal reveal-delay-1 text-secondary text-lg mb-12">The magic happens when you take chances on strangers.</p>
+
+            <!-- Germany Story Card -->
+            <div class="reveal reveal-delay-2 glass-card rounded-3xl p-8 md:p-12 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+
+                <span class="inline-block px-4 py-1 bg-accent/20 rounded-full text-accent text-sm mb-6 font-bold">Germany</span>
+
+                <h3 class="text-2xl font-black text-primary mb-6">The Farmhouse</h3>
+
+                <div class="space-y-4 text-secondary leading-relaxed">
+                    <p>Rejection after rejection. Nobody was letting me camp in their garden. In desperation, I found a camping site 45 minutes away. It was getting dark.</p>
+
+                    <p>While cycling there, I see some people standing in the driveway of a farmhouse. I do my thing and ask if I can camp on their land. They speak in a South German accent.</p>
+
+                    <p>They bring the mother out, and then the father. Eventually one of them says:</p>
+
+                    <blockquote class="text-2xl text-primary italic border-l-4 border-accent pl-6 my-8">
+                        "Yes, or you can stay in the guest house."
+                    </blockquote>
+
+                    <p>It was amazing. I went from <span class="text-accent">living like a caveman</span> to <span class="text-primary">living in a guest hut</span>. It had heating, wifi, lights—everything one could ask for.</p>
+
+                    <!-- Guest Hut Image -->
+                    <div class="my-6 rounded-xl overflow-hidden">
+                        <img
+                            data-src="images/guest-hut-germany.jpg"
+                            alt="The guest hut in Germany"
+                            class="lazy-img w-full h-48 md:h-64 object-cover"
+                            loading="lazy"
+                        >
+                    </div>
+                    <p class="text-secondary text-xs text-center italic -mt-2 mb-4">The guest hut — from caveman to comfort</p>
+
+                    <p>They invited me for dinner. There were lots of flies, 3 blind cats, and they all drank from the same water bottle. Above all, they acted like a family. They were close. <span class="text-accent font-medium">It was beautiful to see.</span></p>
+
+                    <p class="text-primary font-bold">Getting rejected from the many people beforehand was the best thing that could have happened to me.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         GALLERY
+         ======================================== -->
+    <section id="gallery" class="py-24 md:py-32 relative" data-vibe="reflection" data-obstacle="10" data-joy="85">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="reveal text-3xl md:text-5xl font-black text-primary mb-4 text-center">The Views That Made It Worth It</h2>
+            <p class="reveal reveal-delay-1 text-secondary mb-12 text-center">Moments when the grind transformed into pure joy</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="reveal rounded-2xl overflow-hidden glass-card">
+                    <img
+                        data-src="images/beautiful-view-italy-2.jpg"
+                        alt="Beautiful view in Italy"
+                        class="lazy-img w-full h-64 object-cover hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                    >
+                </div>
+                <div class="reveal reveal-delay-1 rounded-2xl overflow-hidden glass-card">
+                    <img
+                        data-src="images/beautiful-view-italy-3.jpg"
+                        alt="Beautiful view in Italy"
+                        class="lazy-img w-full h-64 object-cover hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                    >
+                </div>
+                <div class="reveal reveal-delay-2 rounded-2xl overflow-hidden glass-card">
+                    <img
+                        data-src="images/beautiful-view-italy-4.jpg"
+                        alt="Beautiful view in Italy"
+                        class="lazy-img w-full h-64 object-cover hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                    >
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         CONCLUSION
+         ======================================== -->
+    <section id="conclusion" class="py-24 md:py-32 relative" data-vibe="wisdom" data-obstacle="30" data-joy="90">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="reveal text-3xl md:text-5xl font-black text-primary mb-10">Would I Do It Again?</h2>
+
+            <p class="reveal reveal-delay-1 text-4xl md:text-5xl text-accent font-black mb-8">100%</p>
+
+            <p class="reveal reveal-delay-2 text-secondary text-lg leading-relaxed mb-12 max-w-2xl mx-auto">
+                Yes, but differently. The caveman style is tough. I'm happy I did it, but there are more pleasurable ways. Still—you'll have some amazing stories to tell.
+            </p>
+
+            <div class="reveal reveal-delay-3 glass-card rounded-2xl p-8 md:p-12 inline-block">
+                <p class="text-2xl md:text-3xl text-primary italic font-light">
+                    "May your desire be greater than your obstacles."
+                </p>
+            </div>
+
+            <p class="reveal text-secondary mt-16">Feel free to reach out for guidance.</p>
+            <p class="reveal reveal-delay-1 text-3xl font-black text-primary mt-4">— Charlie</p>
+        </div>
+    </section>
+
+    <!-- ========================================
+         FOOTER
+         ======================================== -->
+    <footer class="py-12 border-t border-accent">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="text-secondary text-sm">How to cycle through Europe for (almost) free.</p>
+            <p class="text-accent/60 text-xs mt-2">Toggle the vibe to experience both sides of the journey</p>
+        </div>
+    </footer>
+
+    <!-- ========================================
+         JAVASCRIPT
+         ======================================== -->
+    <script>
+        // ========================================
+        // SCROLL REVEAL (Intersection Observer)
+        // ========================================
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // ========================================
+        // LAZY LOADING IMAGES
+        // ========================================
+        const lazyImages = document.querySelectorAll('img[data-src]');
+        const imageObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.onload = () => img.classList.add('loaded');
+                    imageObserver.unobserve(img);
+                }
+            });
+        }, { rootMargin: '100px' });
+
+        lazyImages.forEach(img => imageObserver.observe(img));
+
+        // ========================================
+        // VIBE TOGGLE (Theme Switcher)
+        // ========================================
+        const vibeToggle = document.getElementById('vibeToggle');
+        const vibeThumb = document.getElementById('vibeThumb');
+        const body = document.body;
+        let isStars = false;
+
+        vibeToggle.addEventListener('click', () => {
+            isStars = !isStars;
+            body.classList.toggle('theme-grind', !isStars);
+            body.classList.toggle('theme-stars', isStars);
+            vibeThumb.style.transform = isStars ? 'translateX(32px)' : 'translateX(0)';
+        });
+
+        // ========================================
+        // VIBE METER (Section-based)
+        // ========================================
+        const obstacleBar = document.getElementById('obstacleBar');
+        const obstacleValue = document.getElementById('obstacleValue');
+        const joyBar = document.getElementById('joyBar');
+        const joyValue = document.getElementById('joyValue');
+        const vibeSections = document.querySelectorAll('[data-vibe]');
+
+        const vibeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const obstacle = entry.target.dataset.obstacle || 50;
+                    const joy = entry.target.dataset.joy || 50;
+
+                    obstacleBar.style.width = obstacle + '%';
+                    obstacleValue.textContent = obstacle + '%';
+                    joyBar.style.width = joy + '%';
+                    joyValue.textContent = joy + '%';
+                }
+            });
+        }, { threshold: 0.3 });
+
+        vibeSections.forEach(section => vibeObserver.observe(section));
+
+        // ========================================
+        // SMOOTH SCROLL
+        // ========================================
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
