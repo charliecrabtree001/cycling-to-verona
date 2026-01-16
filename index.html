@@ -128,31 +128,70 @@
            ======================================== */
         .hotspot {
             position: absolute;
-            width: 24px;
-            height: 24px;
+            width: 36px;
+            height: 36px;
             cursor: pointer;
+            z-index: 20;
         }
 
         .hotspot-pulse {
             position: absolute;
-            inset: 0;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .hotspot-pulse-2 {
+            position: absolute;
+            inset: -4px;
             border-radius: 50%;
             background: var(--accent);
+            opacity: 0.3;
             animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation-delay: 0.5s;
         }
 
         .hotspot-dot {
             position: absolute;
-            inset: 6px;
+            inset: 8px;
             border-radius: 50%;
             background: var(--accent);
-            box-shadow: 0 0 12px var(--accent);
+            box-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent);
+            animation: dot-glow 1.5s ease-in-out infinite alternate;
+        }
+
+        .hotspot-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            opacity: 0.6;
+        }
+
+        .hotspot-label {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 8px;
+            white-space: nowrap;
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--accent);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            opacity: 0.9;
         }
 
         @keyframes pulse-ring {
             0% { transform: scale(0.8); opacity: 0.8; }
-            50% { transform: scale(1.4); opacity: 0; }
+            50% { transform: scale(1.8); opacity: 0; }
             100% { transform: scale(0.8); opacity: 0; }
+        }
+
+        @keyframes dot-glow {
+            0% { box-shadow: 0 0 15px var(--accent), 0 0 30px var(--accent); }
+            100% { box-shadow: 0 0 25px var(--accent), 0 0 50px var(--accent); }
         }
 
         .hotspot-card {
@@ -319,8 +358,11 @@
                 <!-- Hotspot: Saddle Bag Area (left side) -->
                 <div class="hotspot" style="top: 25%; left: 20%;">
                     <div class="hotspot-pulse"></div>
+                    <div class="hotspot-pulse-2"></div>
+                    <div class="hotspot-ring"></div>
                     <div class="hotspot-dot"></div>
-                    <div class="hotspot-card glass-card rounded-xl p-4 -translate-x-1/2 mt-8">
+                    <span class="hotspot-label">Saddle Bag</span>
+                    <div class="hotspot-card glass-card rounded-xl p-4 -translate-x-1/2 mt-12">
                         <h4 class="text-primary font-bold mb-2">Saddle Bag Warning</h4>
                         <p class="text-secondary text-sm">I strongly advise against 14-18L saddle bags—they bend and break. If you need capacity, go with panniers instead.</p>
                         <span class="inline-block mt-2 text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded">Not Recommended</span>
@@ -328,10 +370,13 @@
                 </div>
 
                 <!-- Hotspot: Frame Bag -->
-                <div class="hotspot" style="top: 45%; left: 35%;">
+                <div class="hotspot" style="top: 45%; left: 45%;">
                     <div class="hotspot-pulse"></div>
+                    <div class="hotspot-pulse-2"></div>
+                    <div class="hotspot-ring"></div>
                     <div class="hotspot-dot"></div>
-                    <div class="hotspot-card glass-card rounded-xl p-4 -translate-x-1/2 mt-8">
+                    <span class="hotspot-label">Frame Bag</span>
+                    <div class="hotspot-card glass-card rounded-xl p-4 -translate-x-1/2 mt-12">
                         <h4 class="text-primary font-bold mb-2">Frame Bag</h4>
                         <p class="text-secondary text-sm">The Restrap frame bag was okay, but it was always wet in the morning for some reason. Consider waterproof liners.</p>
                         <span class="inline-block mt-2 text-xs px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded">Mixed</span>
@@ -341,8 +386,11 @@
                 <!-- Hotspot: Handlebar Bag (right side) -->
                 <div class="hotspot" style="top: 35%; left: 65%;">
                     <div class="hotspot-pulse"></div>
+                    <div class="hotspot-pulse-2"></div>
+                    <div class="hotspot-ring"></div>
                     <div class="hotspot-dot"></div>
-                    <div class="hotspot-card glass-card rounded-xl p-4 -translate-x-full mt-8">
+                    <span class="hotspot-label">Handlebar Bag</span>
+                    <div class="hotspot-card glass-card rounded-xl p-4 -translate-x-full mt-12">
                         <h4 class="text-primary font-bold mb-2">Restrap Handlebar Bag</h4>
                         <p class="text-secondary text-sm">Great quality and reliable. Perfect for items you need quick access to. Highly recommended for long-distance touring.</p>
                         <span class="inline-block mt-2 text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">Recommended</span>
